@@ -110,35 +110,27 @@ public class GestorDispositivosCentro implements GestorDispositivos {
         dispositivoDAO.addDispositivo(new Dispositivo(tipo, modelo, numeroSerie));
     }
 
-    /*
-     * @Override
-     * public void bajaDispositivo(String numeroSerie) {
-     * // Busca el dispositivo por su número de serie en el DAO
-     * Dispositivo dispositivo =
-     * dispositivoDAO.getDispositivoByNumSerie(numeroSerie);
-     * 
-     * // Si no existe, lanza excepción
-     * if (dispositivo == null) {
-     * throw new IllegalArgumentException("Dispositivo con Numero de Serie " +
-     * numeroSerie + " no existe");
-     * }
-     * 
-     * // Si está asignado a un paciente, no se puede dar de baja
-     * if (dispositivo.getPaciente() != null) {
-     * throw new IllegalArgumentException(
-     * "Dispositivo con Numero de Serie " + numeroSerie +
-     * " está asignado al paciente " + dispositivo.getPaciente() +
-     * " y no se puede dar de baja");
-     * }
-     * 
-     * // Marca el dispositivo como dado de baja y persiste el cambio
-     * dispositivo.setEstado(Dispositivo.EstadoDispositivo.BAJA);
-     * dispositivoDAO.updateDispositivo(dispositivo);
-     * }
-     */
     @Override
     public void bajaDispositivo(String numeroSerie) {
-        // TODO: implementación comentada intencionalmente para que los tests fallen
+        // Busca el dispositivo por su número de serie en el DAO
+        Dispositivo dispositivo = dispositivoDAO.getDispositivoByNumSerie(numeroSerie);
+
+        // Si no existe, lanza excepción
+        if (dispositivo == null) {
+            throw new IllegalArgumentException("Dispositivo con Numero de Serie " + numeroSerie + " no existe");
+        }
+
+        // Si está asignado a un paciente, no se puede dar de baja
+        if (dispositivo.getPaciente() != null) {
+            throw new IllegalArgumentException(
+                "Dispositivo con Numero de Serie " + numeroSerie +
+                " está asignado al paciente " + dispositivo.getPaciente() +
+                " y no se puede dar de baja");
+        }
+
+        // Marca el dispositivo como dado de baja y persiste el cambio
+        dispositivo.setEstado(Dispositivo.EstadoDispositivo.BAJA);
+        dispositivoDAO.updateDispositivo(dispositivo);
     }
 
 }

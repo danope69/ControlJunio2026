@@ -56,3 +56,12 @@ test {
         events 'passed', 'skipped', 'failed'
     }
 }
+
+// Genera el Javadoc en la carpeta 'recursos/' de la raíz del proyecto
+javadoc {
+    destinationDir = file("${rootDir}/recursos")
+    options.encoding = 'UTF-8'
+    options.charSet   = 'UTF-8'
+    // Evita que warnings de Javadoc rompan el build
+    options.addBooleanOption('Xdoclint:none', true)
+}

@@ -1,58 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" tests="4" skipped="0" failures="4" errors="0" timestamp="2026-06-12T10:37:59.650Z" hostname="DANI" time="1.69">
+<testsuite name="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-06-12T10:44:47.965Z" hostname="DANI" time="1.756">
   <properties/>
-  <testcase name="Da de baja correctamente un dispositivo libre" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="1.65">
-    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;BAJA&gt; but was: &lt;LIBRE&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;BAJA&gt; but was: &lt;LIBRE&gt;
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
-	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
-	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
-	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
-	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
-	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
-	at us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest.bajaDispositivo_dispositivoLibre_marcaBajaYPersiste(BajaDispositivoTest.java:103)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-</failure>
-  </testcase>
-  <testcase name="Da de baja correctamente un dispositivo en mantenimiento sin paciente asignado" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="0.004">
-    <failure message="org.opentest4j.AssertionFailedError: expected: &lt;BAJA&gt; but was: &lt;EN_MANTENIMIENTO&gt;" type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: expected: &lt;BAJA&gt; but was: &lt;EN_MANTENIMIENTO&gt;
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
-	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
-	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
-	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
-	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:177)
-	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1145)
-	at us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest.bajaDispositivo_dispositivoEnMantenimientoSinPaciente_marcaBajaYPersiste(BajaDispositivoTest.java:123)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-</failure>
-  </testcase>
-  <testcase name="Lanza IllegalArgumentException cuando el dispositivo está asignado a un paciente" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="0.004">
-    <failure message="org.opentest4j.AssertionFailedError: Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown." type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown.
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
-	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
-	at us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest.bajaDispositivo_dispositivoAsignado_lanzaExcepcion(BajaDispositivoTest.java:74)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-</failure>
-  </testcase>
-  <testcase name="Lanza IllegalArgumentException cuando el dispositivo no existe" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="0.003">
-    <failure message="org.opentest4j.AssertionFailedError: Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown." type="org.opentest4j.AssertionFailedError">org.opentest4j.AssertionFailedError: Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown.
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:35)
-	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3115)
-	at us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest.bajaDispositivo_dispositivoNoExiste_lanzaExcepcion(BajaDispositivoTest.java:48)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-</failure>
-  </testcase>
+  <testcase name="Da de baja correctamente un dispositivo libre" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="1.718"/>
+  <testcase name="Da de baja correctamente un dispositivo en mantenimiento sin paciente asignado" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="0.003"/>
+  <testcase name="Lanza IllegalArgumentException cuando el dispositivo está asignado a un paciente" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="0.004"/>
+  <testcase name="Lanza IllegalArgumentException cuando el dispositivo no existe" classname="us.dit.muit.fs.gestordispositivos.control.BajaDispositivoTest" time="0.003"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\danig\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.14.12\be4984cb6fd1ef1d11f218a648889dfda44b8a15\byte-buddy-agent-1.14.12.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
