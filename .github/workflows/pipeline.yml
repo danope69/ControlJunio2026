@@ -19,6 +19,10 @@ on:
   # También se puede lanzar manualmente desde la pestaña Actions
   workflow_dispatch:
 
+# Forzar Node.js 24 en todas las actions (evita warning de deprecación de Node 20)
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── 1. Verificar código y tests ──────────────────────────
   test:
