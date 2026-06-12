@@ -1,48 +1,166 @@
-name: Generar Javadoc
+name: CI/CD – Rama Desarrollo
 
-# Se activa cuando se hace push a la rama feature/bajaDispositivo
-# "nueva versión" = cualquier push (commit) a esa rama
+# ─────────────────────────────────────────────────────────
+# SECRETS necesarios en Settings → Secrets and variables → Actions:
+#   TEAMS_WEBHOOK_URL  →  URL del Incoming Webhook configurado en el canal de Teams
+#                         (crear en el canal: Conectores → Incoming Webhook → Configurar)
+#
+# TOKENS automáticos (no hay que añadir nada):
+#   GITHUB_TOKEN       →  lo genera GitHub Actions automáticamente
+#   GITHUB_ACTOR       →  usuario que hizo el push/merge
+#   GITHUB_REPOSITORY  →  owner/repo
+# ─────────────────────────────────────────────────────────
+
 on:
+  # Se dispara cuando llega un merge (push) a la rama desarrollo
   push:
     branches:
-      - feature/bajaDispositivo
+      - desarrollo
+  # También se puede lanzar manualmente desde la pestaña Actions
+  workflow_dispatch:
 
 jobs:
-  javadoc:
-    name: Generar y guardar Javadoc en recursos/
+  # ── 1. Verificar código y tests ──────────────────────────
+  test:
+    name: Verificar – Tests JUnit
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write   # necesario para hacer commit de vuelta al repo
-
     steps:
-      # 1. Descargar el código de la rama
       - name: Checkout del repositorio
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # historial completo para el commit posterior
 
-      # 2. Instalar JDK 21 (mismo que usa el proyecto localmente)
       - name: Configurar JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'microsoft'
           java-version: '21'
 
-      # 3. Dar permisos de ejecución al wrapper
-      - name: Dar permisos a gradlew
+      - name: Dar permisos al wrapper
         run: chmod +x ./gradlew
 
-      # 4. Generar el Javadoc → se guardará en recursos/
-      - name: Generar Javadoc
+      - name: Ejecutar tests
+        run: ./gradlew test
+
+      # Publica el informe de tests como artefacto descargable
+      - name: Subir informe de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-tests
+          path: build/reports/tests/test/
+
+  # ── 3. Generar Javadoc y guardarlo en recursos/ ──────────
+  javadoc:
+    name: Generar Javadoc → recursos/
+    runs-on: ubuntu-latest
+    needs: test   # solo si los tests pasan
+
+    permissions:
+      contents: write   # necesario para hacer commit de recursos/
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+
+      - name: Dar permisos al wrapper
+        run: chmod +x ./gradlew
+
+      - name: Generar Javadoc en recursos/
         run: ./gradlew javadoc
 
-      # 5. Hacer commit de la carpeta recursos/ generada y subirla al repo
       - name: Commit y push de recursos/
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add recursos/
-          # Solo hace commit si hay cambios reales
           git diff --cached --quiet || git commit -m "docs: actualiza Javadoc en recursos/ [skip ci]"
           git push
+
+  # ── 4. Publicar en GitHub Packages (solo si los tests pasan) ──
+  publish:
+    name: Publicar artefacto en GitHub Packages
+    runs-on: ubuntu-latest
+    needs: test   # solo se ejecuta si el job 'test' tuvo éxito
+
+    permissions:
+      contents: read
+      packages: write   # permiso para publicar en GitHub Packages
+
+    outputs:
+      # Exporta el GAV para usarlo en la notificación de Teams
+      gav: ${{ steps.gav.outputs.gav }}
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+
+      - name: Dar permisos al wrapper
+        run: chmod +x ./gradlew
+
+      - name: Leer GAV del artefacto
+        id: gav
+        run: |
+          GROUP=$(./gradlew properties -q | grep "^group:" | awk '{print $2}')
+          ARTIFACT=$(./gradlew properties -q | grep "^name:" | awk '{print $2}')
+          VERSION=$(./gradlew properties -q | grep "^version:" | awk '{print $2}')
+          echo "gav=${GROUP}:${ARTIFACT}:${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Publicar en GitHub Packages
+        run: ./gradlew publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ── 5. Notificar en Teams ────────────────────────────────
+  notify-teams:
+    name: Notificar en Teams
+    runs-on: ubuntu-latest
+    needs: publish   # solo si la publicación tuvo éxito
+
+    steps:
+      - name: Enviar mensaje al canal de Teams
+        # TEAMS_WEBHOOK_URL debe estar configurado en los Secrets del repositorio
+        # (NO se escribe la URL aquí — se lee del secret)
+        env:
+          WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+          ACTOR:       ${{ github.actor }}
+          REPO:        ${{ github.repository }}
+          GAV:         ${{ needs.publish.outputs.gav }}
+          RUN_URL:     ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          curl -s -o /dev/null -w "%{http_code}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"@type\": \"MessageCard\",
+              \"@context\": \"https://schema.org/extensions\",
+              \"themeColor\": \"0076D7\",
+              \"summary\": \"Nuevo artefacto publicado en GitHub Packages\",
+              \"sections\": [{
+                \"activityTitle\": \"🚀 Nuevo artefacto publicado\",
+                \"activitySubtitle\": \"Rama: desarrollo\",
+                \"facts\": [
+                  { \"name\": \"👤 Usuario (merge)\", \"value\": \"${ACTOR}\" },
+                  { \"name\": \"📦 Repositorio\",     \"value\": \"${REPO}\" },
+                  { \"name\": \"🏷️ GAV\",             \"value\": \"\`${GAV}\`\" }
+                ],
+                \"potentialAction\": [{
+                  \"@type\": \"OpenUri\",
+                  \"name\": \"Ver ejecución en GitHub Actions\",
+                  \"targets\": [{ \"os\": \"default\", \"uri\": \"${RUN_URL}\" }]
+                }]
+              }]
+            }" \
+            "${WEBHOOK_URL}"
