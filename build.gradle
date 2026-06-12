@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
 
 group = 'us.dit.muit.fs'
@@ -64,4 +65,26 @@ javadoc {
     options.charSet   = 'UTF-8'
     // Evita que warnings de Javadoc rompan el build
     options.addBooleanOption('Xdoclint:none', true)
+}
+
+// Publicación en GitHub Packages
+// Las credenciales se leen de variables de entorno — NUNCA se escriben aquí
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            // GAV heredado de group, rootProject.name y version definidos arriba
+        }
+    }
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            // GITHUB_REPOSITORY se expone automáticamente en GitHub Actions
+            url = uri("https://maven.pkg.github.com/${System.env.GITHUB_REPOSITORY ?: 'danope69/ControlJunio2026'}")
+            credentials {
+                username = System.env.GITHUB_ACTOR   ?: ''
+                password = System.env.GITHUB_TOKEN   ?: ''
+            }
+        }
+    }
 }
