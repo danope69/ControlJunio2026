@@ -1,0 +1,48 @@
+name: Generar Javadoc
+
+# Se activa cuando se hace push a la rama feature/bajaDispositivo
+# "nueva versión" = cualquier push (commit) a esa rama
+on:
+  push:
+    branches:
+      - feature/bajaDispositivo
+
+jobs:
+  javadoc:
+    name: Generar y guardar Javadoc en recursos/
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # necesario para hacer commit de vuelta al repo
+
+    steps:
+      # 1. Descargar el código de la rama
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # historial completo para el commit posterior
+
+      # 2. Instalar JDK 21 (mismo que usa el proyecto localmente)
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+
+      # 3. Dar permisos de ejecución al wrapper
+      - name: Dar permisos a gradlew
+        run: chmod +x ./gradlew
+
+      # 4. Generar el Javadoc → se guardará en recursos/
+      - name: Generar Javadoc
+        run: ./gradlew javadoc
+
+      # 5. Hacer commit de la carpeta recursos/ generada y subirla al repo
+      - name: Commit y push de recursos/
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add recursos/
+          # Solo hace commit si hay cambios reales
+          git diff --cached --quiet || git commit -m "docs: actualiza Javadoc en recursos/ [skip ci]"
+          git push
