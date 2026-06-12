@@ -28,6 +28,9 @@ dependencies {
     // Mockito para mocking en tests
     testImplementation 'org.mockito:mockito-core:5.11.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.11.0'
+
+    // Requerido por Gradle 9.x: launcher de JUnit Platform
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 // Directorio de fuentes: la carpeta 'java/' en la raíz del proyecto

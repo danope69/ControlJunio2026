@@ -6,33 +6,36 @@ import org.apache.logging.log4j.Logger;
 
 import us.dit.muit.fs.gestordispositivos.modelo.Dispositivo;
 
-
 /**
- * Clase que implementa la interfaz GestorDispositivos, realiza las labores de gestor de dispositivos 
+ * Clase que implementa la interfaz GestorDispositivos, realiza las labores de
+ * gestor de dispositivos
  * médicos para un centro sanitario.
- * Un gestor de dispositivos es responsable de asignar dispositivos a pacientes, 
- * liberarlos cuando el paciente termina su tratamiento, enviar dispositivos a mantenimiento 
- * cuando se detecta un fallo, dar de alta y baja dispositivos en el sistema de gestión.
+ * Un gestor de dispositivos es responsable de asignar dispositivos a pacientes,
+ * liberarlos cuando el paciente termina su tratamiento, enviar dispositivos a
+ * mantenimiento
+ * cuando se detecta un fallo, dar de alta y baja dispositivos en el sistema de
+ * gestión.
  */
-public class GestorDispositivosCentro implements GestorDispositivos {    
+public class GestorDispositivosCentro implements GestorDispositivos {
     private static final Logger logger = LogManager.getLogger(GestorDispositivosCentro.class);
     private String idCentro; // Identificador unívoco del centro
     private DispositivoDAO dispositivoDAO; // DAO para manejar la persistencia de dispositivos
-   
 
     public GestorDispositivosCentro(String idCentro, DispositivoDAO dispositivoDAO) {
         this.dispositivoDAO = dispositivoDAO;
         this.idCentro = idCentro;
-     
+
     }
 
-
-    public String getIdCentro() { return idCentro; }
+    public String getIdCentro() {
+        return idCentro;
+    }
 
     @Override
-    public String asignarDispositivo(String idPaciente, Dispositivo.TipoDispositivo tipoDispositivo) throws IllegalArgumentException {
+    public String asignarDispositivo(String idPaciente, Dispositivo.TipoDispositivo tipoDispositivo)
+            throws IllegalArgumentException {
         String numeroSerie = null;
-       
+
         // Buscar un dispositivo libre del tipo solicitado
         List<Dispositivo> dispositivosTipo = dispositivoDAO.getDispositivosByType(tipoDispositivo);
         for (Dispositivo d : dispositivosTipo) {
@@ -44,12 +47,13 @@ public class GestorDispositivosCentro implements GestorDispositivos {
                 break;
             }
         }
-       
+
         return numeroSerie;
     }
 
     @Override
-    public void liberarDispositivo(String idPaciente, Dispositivo.TipoDispositivo tipoDispositivo) throws IllegalArgumentException {
+    public void liberarDispositivo(String idPaciente, Dispositivo.TipoDispositivo tipoDispositivo)
+            throws IllegalArgumentException {
         Dispositivo dispositivoAsignado = null;
         List<Dispositivo> dispositivosPaciente = dispositivoDAO.getDispositivosByPatient(idPaciente);
         for (Dispositivo d : dispositivosPaciente) {
@@ -58,30 +62,29 @@ public class GestorDispositivosCentro implements GestorDispositivos {
                 break;
             }
         }
-       
+
         dispositivoAsignado.setEstado(Dispositivo.EstadoDispositivo.LIBRE);
         dispositivoAsignado.setPaciente(null);
-        dispositivoDAO.updateDispositivo(dispositivoAsignado);  
+        dispositivoDAO.updateDispositivo(dispositivoAsignado);
     }
 
     @Override
     public String enviarMantenimiento(String numeroSerie) {
-        String newDispositivo=null;
+        String newDispositivo = null;
         Dispositivo dispositivo = dispositivoDAO.getDispositivoByNumSerie(numeroSerie);
         if (dispositivo == null) {
             throw new IllegalArgumentException("Dispositivo con Numero de Serie " + numeroSerie + " no existe");
         }
         String idPaciente = dispositivo.getPaciente();
-         
+
         dispositivo.setEstado(Dispositivo.EstadoDispositivo.EN_MANTENIMIENTO);
         dispositivo.setPaciente(null);
-       
-        dispositivoDAO.updateDispositivo(dispositivo);    
-        if(idPaciente != null) {
-             newDispositivo = asignarDispositivo(idPaciente, dispositivo.getTipo());
-           
-             
-        }       
+
+        dispositivoDAO.updateDispositivo(dispositivo);
+        if (idPaciente != null) {
+            newDispositivo = asignarDispositivo(idPaciente, dispositivo.getTipo());
+
+        }
         return newDispositivo;
     }
 
@@ -89,10 +92,11 @@ public class GestorDispositivosCentro implements GestorDispositivos {
     public String resolverMantenimiento(String numeroSerie) {
         String idPaciente = null;
         Dispositivo dispositivo = dispositivoDAO.getDispositivoByNumSerie(numeroSerie);
-       
+
         dispositivo.setEstado(Dispositivo.EstadoDispositivo.LIBRE);
         dispositivoDAO.updateDispositivo(dispositivo);
-        // Si el dispositivo estaba asignado a un paciente, devolverle el mismo dispositivo
+        // Si el dispositivo estaba asignado a un paciente, devolverle el mismo
+        // dispositivo
         if (dispositivo.getPaciente() != null) {
             idPaciente = dispositivo.getPaciente();
             dispositivo.setEstado(Dispositivo.EstadoDispositivo.ASIGNADO);
@@ -103,14 +107,38 @@ public class GestorDispositivosCentro implements GestorDispositivos {
 
     @Override
     public void altaDispositivo(String modelo, Dispositivo.TipoDispositivo tipo, String numeroSerie) {
-       dispositivoDAO.addDispositivo(new Dispositivo(tipo, modelo, numeroSerie));
+        dispositivoDAO.addDispositivo(new Dispositivo(tipo, modelo, numeroSerie));
     }
 
+    /*
+     * @Override
+     * public void bajaDispositivo(String numeroSerie) {
+     * // Busca el dispositivo por su número de serie en el DAO
+     * Dispositivo dispositivo =
+     * dispositivoDAO.getDispositivoByNumSerie(numeroSerie);
+     * 
+     * // Si no existe, lanza excepción
+     * if (dispositivo == null) {
+     * throw new IllegalArgumentException("Dispositivo con Numero de Serie " +
+     * numeroSerie + " no existe");
+     * }
+     * 
+     * // Si está asignado a un paciente, no se puede dar de baja
+     * if (dispositivo.getPaciente() != null) {
+     * throw new IllegalArgumentException(
+     * "Dispositivo con Numero de Serie " + numeroSerie +
+     * " está asignado al paciente " + dispositivo.getPaciente() +
+     * " y no se puede dar de baja");
+     * }
+     * 
+     * // Marca el dispositivo como dado de baja y persiste el cambio
+     * dispositivo.setEstado(Dispositivo.EstadoDispositivo.BAJA);
+     * dispositivoDAO.updateDispositivo(dispositivo);
+     * }
+     */
     @Override
     public void bajaDispositivo(String numeroSerie) {
-        Dispositivo dispositivo = dispositivoDAO.getDispositivoByNumSerie(numeroSerie);
-        dispositivo.setEstado(Dispositivo.EstadoDispositivo.BAJA);
-        dispositivoDAO.updateDispositivo(dispositivo);
+        // TODO: implementación comentada intencionalmente para que los tests fallen
     }
 
 }
